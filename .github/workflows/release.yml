@@ -140,7 +140,7 @@ jobs:
         echo "EOF" >> $GITHUB_OUTPUT
 
     - name: Update release notes
-      uses: actions/github-script@v6
+      uses: actions/github-script@v8
       with:
         script: |
           const release = await github.rest.repos.getRelease({
