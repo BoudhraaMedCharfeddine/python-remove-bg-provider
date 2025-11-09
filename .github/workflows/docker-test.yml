@@ -35,11 +35,11 @@ jobs:
 
     - name: Test Docker Compose
       run: |
-        # Test docker-compose configuration
-        docker-compose config
+        # Test docker compose configuration
+        docker compose config
         
         # Start services
-        docker-compose up -d
+        docker compose up -d
         
         # Wait for service to be ready
         sleep 20
@@ -81,12 +81,12 @@ jobs:
         file /tmp/result_advanced_compose.png | grep -q "PNG image" || exit 1
         
         # Cleanup
-        docker-compose down
+        docker compose down
 
     - name: Test different models
       run: |
         # Start service
-        docker-compose up -d
+        docker compose up -d
         sleep 20
         
         # Create test image
@@ -116,12 +116,12 @@ jobs:
         done
         
         # Cleanup
-        docker-compose down
+        docker compose down
 
     - name: Test error handling
       run: |
         # Start service
-        docker-compose up -d
+        docker compose up -d
         sleep 20
         
         # Test with invalid file
@@ -144,12 +144,12 @@ jobs:
         fi
         
         # Cleanup
-        docker-compose down
+        docker compose down
 
     - name: Performance test
       run: |
         # Start service
-        docker-compose up -d
+        docker compose up -d
         sleep 20
         
         # Create larger test image
@@ -181,12 +181,12 @@ jobs:
         fi
         
         # Cleanup
-        docker-compose down
+        docker compose down
 
     - name: Cleanup
       if: always()
       run: |
-        docker-compose down || true
+        docker compose down || true
         docker system prune -f || true
 
 
