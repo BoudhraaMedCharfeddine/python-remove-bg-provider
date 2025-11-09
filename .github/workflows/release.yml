@@ -1,0 +1,209 @@
+name: Release and Deploy
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/python-remove-bg-provider
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
+          type=raw,value=latest
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  test-release:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Test released image
+      run: |
+        # Pull the released image
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        
+        # Run tests on the released image
+        docker run -d -p 8001:8001 --name test-release-container ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        
+        # Wait for service to start
+        sleep 20
+        
+        # Test health endpoint
+        curl -f http://localhost:8001/health || exit 1
+        
+        # Create test image
+        python3 -c "
+        from PIL import Image
+        import io
+        img = Image.new('RGB', (100, 100), color='purple')
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format='PNG')
+        with open('/tmp/test_release.png', 'wb') as f:
+            f.write(img_bytes.getvalue())
+        print('Test image for release created')
+        "
+        
+        # Test background removal
+        curl -X POST -F "file=@/tmp/test_release.png" http://localhost:8001/bg/remove -o /tmp/result_release.png
+        
+        # Verify result
+        file /tmp/result_release.png | grep -q "PNG image" || exit 1
+        
+        # Cleanup
+        docker stop test-release-container
+        docker rm test-release-container
+
+  create-release-notes:
+    runs-on: ubuntu-latest
+    needs: [build-and-push, test-release]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Get the latest tag
+        latest_tag=$(git describe --tags --abbrev=0)
+        echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+        
+        # Generate changelog since last tag
+        if [ -n "$latest_tag" ]; then
+          changelog=$(git log --pretty=format:"- %s (%h)" $latest_tag..HEAD)
+        else
+          changelog=$(git log --pretty=format:"- %s (%h)" --max-count=10)
+        fi
+        
+        echo "changelog<<EOF" >> $GITHUB_OUTPUT
+        echo "$changelog" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Update release notes
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const release = await github.rest.repos.getRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: context.payload.release.id
+          });
+          
+          const changelog = `${{ steps.changelog.outputs.changelog }}`;
+          const body = `## 🚀 Release ${{ github.event.release.tag_name }}
+          
+          ### 📦 Docker Image
+          \`\`\`bash
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
+          docker run -d -p 8001:8001 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
+          \`\`\`
+          
+          ### 🔄 Changes
+          ${changelog}
+          
+          ### 🐳 Usage
+          \`\`\`bash
+          # Health check
+          curl http://localhost:8001/health
+          
+          # Remove background
+          curl -X POST -F "file=@image.jpg" http://localhost:8001/bg/remove -o result.png
+          
+          # Advanced removal
+          curl -X POST -F "file=@image.jpg" -F "model=u2net" -F "alpha_matting=true" http://localhost:8001/bg/remove-advanced -o result.png
+          \`\`\`
+          
+          ### 📚 Documentation
+          - API Documentation: http://localhost:8001/docs
+          - Health Check: http://localhost:8001/health
+          `;
+          
+          await github.rest.repos.updateRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: context.payload.release.id,
+            body: body
+          });
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [build-and-push, test-release]
+    if: always()
+    
+    steps:
+    - name: Notify success
+      if: needs.test-release.result == 'success'
+      run: |
+        echo "✅ Release ${{ github.event.release.tag_name }} deployed successfully!"
+        echo "🐳 Docker image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}"
+        echo "📚 Documentation: http://localhost:8001/docs"
+
+    - name: Notify failure
+      if: needs.test-release.result == 'failure'
+      run: |
+        echo "❌ Release ${{ github.event.release.tag_name }} failed!"
+        exit 1
+
+
+
+

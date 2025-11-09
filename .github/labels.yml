@@ -1,0 +1,98 @@
+# GitHub Labels Configuration for Python Remove Background Provider
+
+labels:
+  # Issue Types
+  - name: bug
+    color: d73a4a
+    description: Something isn't working
+  - name: enhancement
+    color: a2eeef
+    description: New feature or request
+  - name: documentation
+    color: 0075ca
+    description: Improvements or additions to documentation
+  - name: question
+    color: d876e3
+    description: Further information is requested
+
+  # Priority
+  - name: priority: high
+    color: b60205
+    description: High priority issue
+  - name: priority: medium
+    color: fbca04
+    description: Medium priority issue
+  - name: priority: low
+    color: 0e8a16
+    description: Low priority issue
+
+  # Status
+  - name: status: needs-triage
+    color: f9d0c4
+    description: Needs to be triaged
+  - name: status: in-progress
+    color: 1d76db
+    description: Work in progress
+  - name: status: blocked
+    color: d93f0b
+    description: Blocked by something else
+  - name: status: ready-for-review
+    color: 0e8a16
+    description: Ready for review
+
+  # Categories
+  - name: api
+    color: 7057ff
+    description: API related changes
+  - name: docker
+    color: 0e8a16
+    description: Docker related changes
+  - name: performance
+    color: f9d0c4
+    description: Performance improvements
+  - name: security
+    color: b60205
+    description: Security related changes
+  - name: tests
+    color: 0075ca
+    description: Test related changes
+  - name: ci/cd
+    color: 1d76db
+    description: CI/CD related changes
+
+  # Models
+  - name: model: u2net
+    color: f9d0c4
+    description: Related to u2net model
+  - name: model: u2net_human_seg
+    color: f9d0c4
+    description: Related to u2net_human_seg model
+  - name: model: silueta
+    color: f9d0c4
+    description: Related to silueta model
+  - name: model: isnet-general-use
+    color: f9d0c4
+    description: Related to isnet-general-use model
+
+  # Size
+  - name: size: small
+    color: 0e8a16
+    description: Small change
+  - name: size: medium
+    color: fbca04
+    description: Medium change
+  - name: size: large
+    color: b60205
+    description: Large change
+
+  # Breaking Changes
+  - name: breaking-change
+    color: b60205
+    description: Breaking change
+  - name: backward-compatible
+    color: 0e8a16
+    description: Backward compatible change
+
+
+
+
