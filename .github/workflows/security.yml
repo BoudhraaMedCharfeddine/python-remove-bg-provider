@@ -44,7 +44,7 @@ jobs:
         semgrep --config=auto .
 
     - name: Upload security reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v5
       if: always()
       with:
         name: security-reports
@@ -122,7 +122,7 @@ jobs:
         pip list --outdated
 
     - name: Upload dependency reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v5
       if: always()
       with:
         name: dependency-reports
@@ -153,7 +153,7 @@ jobs:
         pip-licenses --format=csv --output-file=licenses.csv
 
     - name: Upload license reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v5
       if: always()
       with:
         name: license-reports
