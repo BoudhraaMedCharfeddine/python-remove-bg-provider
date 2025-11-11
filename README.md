@@ -345,7 +345,7 @@ This project uses GitHub Actions for continuous integration and deployment:
   - Python tests with multiple versions (3.11, 3.12)
   - Code linting with flake8
   - Type checking with mypy
-  - Docker image building and pushing
+  - Coverage reporting with pytest
   - Security scanning with Trivy
 
 - **Docker Integration Tests** (`docker-test.yml`): Comprehensive Docker testing
@@ -360,12 +360,6 @@ This project uses GitHub Actions for continuous integration and deployment:
   - Docker image security scanning
   - License compliance checking
   - Static code analysis
-
-- **Release and Deploy** (`release.yml`): Automated releases
-  - Multi-architecture Docker image building
-  - Release testing
-  - Automatic changelog generation
-  - Container registry publishing
 
 ### Status Badges
 
@@ -392,7 +386,7 @@ make ci-script
 make ci-lint      # Code linting (flake8, mypy)
 make ci-test      # Unit tests with coverage
 make ci-security  # Security checks (safety, bandit)
-make ci-docker    # Docker build and container tests
+make ci-docker    # Optional local Docker build and container tests
 ```
 
 **Full CI with Cleanup:**
