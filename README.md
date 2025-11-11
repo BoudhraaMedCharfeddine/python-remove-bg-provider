@@ -341,28 +341,15 @@ This project uses GitHub Actions for continuous integration and deployment:
 
 ### Workflows
 
-- **CI/CD Pipeline** (`ci.yml`): Runs on every push and pull request
+- **CI Pipeline** (`ci.yml`): Runs on every push and pull request
   - Unit tests with pytest across Python 3.11 and 3.12
   - Coverage reporting with pytest
-
-- **Docker Integration Tests** (`docker-test.yml`): Comprehensive Docker testing
-  - Docker image building and testing
-  - Docker Compose testing
-  - Multiple model testing
-  - Error handling validation
-  - Performance testing
-
-- **Security Analysis** (`security.yml`): Security-focused checks
-  - Dependency vulnerability scanning
-  - Docker image security scanning
-  - License compliance checking
-  - Static code analysis
+- **Code Quality Analysis** (`codeql.yml`): Static analysis via GitHub CodeQL on pushes, PRs, and weekly schedule
 
 ### Status Badges
 
-[![CI/CD Pipeline](https://github.com/your-username/python-remove-bg-provider/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/your-username/python-remove-bg-provider/actions)
-[![Docker Tests](https://github.com/your-username/python-remove-bg-provider/workflows/Docker%20Integration%20Tests/badge.svg)](https://github.com/your-username/python-remove-bg-provider/actions)
-[![Security](https://github.com/your-username/python-remove-bg-provider/workflows/Security%20Analysis/badge.svg)](https://github.com/your-username/python-remove-bg-provider/actions)
+[![CI Pipeline](https://github.com/your-username/python-remove-bg-provider/workflows/CI%20Pipeline/badge.svg)](https://github.com/your-username/python-remove-bg-provider/actions)
+[![CodeQL](https://github.com/your-username/python-remove-bg-provider/workflows/CodeQL/badge.svg)](https://github.com/your-username/python-remove-bg-provider/actions)
 
 ### Local CI Testing
 
