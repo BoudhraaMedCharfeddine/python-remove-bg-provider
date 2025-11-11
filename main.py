@@ -15,10 +15,27 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Get API key from environment
-API_KEY = os.getenv("X_API_KEY")
-if not API_KEY:
-    logger.warning("X_API_KEY not set in environment variables. API will be accessible without authentication!")
+# Track whether we've already warned about a missing API key
+_api_key_warning_logged = False
+
+
+def get_api_key() -> Optional[str]:
+    """
+    Retrieve the API key from the environment.
+
+    Returns:
+        Optional[str]: The configured API key, if any.
+    """
+    global _api_key_warning_logged
+
+    api_key = os.getenv("X_API_KEY")
+    if not api_key and not _api_key_warning_logged:
+        logger.warning(
+            "X_API_KEY not set in environment variables. API will be accessible without authentication!"
+        )
+        _api_key_warning_logged = True
+
+    return api_key
 
 # Get allowed origins from environment
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
@@ -44,7 +61,9 @@ async def verify_api_key(x_api_key: Annotated[str | None, Header()] = None):
     """
     Verify API key from X-API-Key header
     """
-    if not API_KEY:
+    api_key = get_api_key()
+
+    if not api_key:
         # If no API key is configured, allow access (for development)
         return True
     
@@ -54,7 +73,7 @@ async def verify_api_key(x_api_key: Annotated[str | None, Header()] = None):
             detail="X-API-Key header is required"
         )
     
-    if x_api_key != API_KEY:
+    if x_api_key != api_key:
         raise HTTPException(
             status_code=401,
             detail="Invalid API key"
