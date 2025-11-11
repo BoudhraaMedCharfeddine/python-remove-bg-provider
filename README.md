@@ -342,11 +342,8 @@ This project uses GitHub Actions for continuous integration and deployment:
 ### Workflows
 
 - **CI/CD Pipeline** (`ci.yml`): Runs on every push and pull request
-  - Python tests with multiple versions (3.11, 3.12)
-  - Code linting with flake8
-  - Type checking with mypy
+  - Unit tests with pytest across Python 3.11 and 3.12
   - Coverage reporting with pytest
-  - Security scanning with Trivy
 
 - **Docker Integration Tests** (`docker-test.yml`): Comprehensive Docker testing
   - Docker image building and testing
