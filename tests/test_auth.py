@@ -121,8 +121,8 @@ class TestAuthenticationWithoutAPIKey:
         # For now, we'll test the current behavior
         response = client.get("/models")
         
-        # Should still require auth because we set it in setup_test_env
-        assert response.status_code == 401
+        # When no API key is configured, the service should allow access
+        assert response.status_code == 200
     
     def test_development_mode_warning(self, client):
         """Test that development mode warning is logged when no API key is set"""
